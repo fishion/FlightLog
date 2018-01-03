@@ -1,28 +1,25 @@
 "use strict";
 
 let should  = require('should')
+  , path    = require('path')
 let FL      = require('../Flightlog');
-
-let test_data = {
-  "a" : [
-    { code : "a", dist: 0, rowno: 1 },
-    { code : "b", dist: 300, rowno: 2 },
-    { code : "c", dist: 500, rowno: 3 },
-  ],
-  "b": [
-    { code : "a", dist: 300, rowno: 4 },
-    { code : "a", dist: 300, rowno: 5 },
-    { code : "b", dist: 0, rowno: 6 },
-    { code : "c", dist: 400, rowno: 7 },
-  ],
-  "c": [
-    { code : "a", dist: 500, rowno: 8 },
-  ]
-}
+let testcsv = path.join(__dirname,'flightlog.csv')
 
 describe('Test constructor', () => {
+  it('should throw an error if created with no csv', done => {
+    let error = ''
+    try { let fl = new FL() } catch (e){ error = e }
+    error.should.equal('Need a CVS file to parse')
+    done();
+  })
+  it('should throw an error if cant find csv file', done => {
+    let error = ''
+    try { let fl = new FL('notafile') } catch (e){ error = e }
+    error.should.equal("Can't open file 'notafile'")
+    done();
+  })
   it('should be able to build an object with test object', done => {
-    let fl = new FL(undefined, test_data);
+    let fl = new FL(testcsv);
     fl.flights.should.be.an.Object();
     fl.flights.a.should.be.an.Array();
     done();
@@ -32,13 +29,13 @@ describe('Test constructor', () => {
 describe('Test object methods', () => {
 
   it('should have a dump method', done => {
-    let fl = new FL(undefined, test_data);
+    let fl = new FL(testcsv);
     fl.dump.should.be.a.Function();
     done();
   })
 
   it('should be able to filter flights starting and ending at same place', done => {
-    let fl = new FL(undefined, test_data)
+    let fl = new FL(testcsv)
       , b_dests = fl.flights.b.length
     ;
 
@@ -54,7 +51,7 @@ describe('Test object methods', () => {
   })
 
   it('should be able to pair and filter simple out and return flights', done => {
-    let fl = new FL(undefined, test_data)
+    let fl = new FL(testcsv)
       , a_dests = fl.flights.a.length
       , b_dests = fl.flights.b.length
       , c_dests = fl.flights.c.length

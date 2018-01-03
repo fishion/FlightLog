@@ -14,5 +14,8 @@
   "devDependencies": {
     "mocha": "^4.1.0",
     "should": "^13.2.0"
+  },
+  "dependencies": {
+    "csv-parse": "^2.0.0"
   }
 }

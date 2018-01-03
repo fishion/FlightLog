@@ -1,12 +1,24 @@
 "use strict";
 
-module.exports = class FlightLog {
-  constructor(csv, object = {}){
-    if (csv){
+let fs          = require('fs')
+  , csv_parser  = require('csv-parse/lib/sync');
 
-    } else {
-      this.flights = object
-    }
+module.exports = class FlightLog {
+  constructor(csv){
+    if (!csv) throw('Need a CVS file to parse')
+    
+    try {var csvdata = csv_parser(fs.readFileSync(csv, {encoding: 'utf8'}))}
+    catch(e){ throw("Can't open file '"+csv+"'") }
+
+    this.flights = csvdata.reduce((ob, row, index) => {
+      let from = row[0]
+        , to   = row[1]
+        , dist = row[2]
+      if (!ob[from]) ob[from] = [];
+      ob[from].push({code : to, dist: dist, rowno: index+1});
+      return ob
+    }, {})
+
     this.routes_found = [];
   }
 
@@ -35,6 +47,7 @@ module.exports = class FlightLog {
   }
 
   _dead_end(home, loc){
+    if (home == loc) return true; // Circular route going nowhere
     if (!this.flights[loc]) return true; // no flights out of here to test
 
     // loop through other places we went from destination airport
