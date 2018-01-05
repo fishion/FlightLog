@@ -6,22 +6,25 @@ let fs          = require('fs')
 module.exports = class FlightLog {
   constructor(csv){
     if (!csv) throw('Need a CVS file to parse')
+
     try {this.filecontents = fs.readFileSync(csv, {encoding: 'utf8'})}
     catch(e){ throw("Can't open file '"+csv+"'") }
     try {this.csvdata = csv_parser(this.filecontents, {columns: true})}
     catch(e){ throw("Failed to read csv data") }
+    this.flights = this.generate_flightlog()
+    this.routes_found = [];
+  }
 
-    this.flights = this.csvdata.reduce((ob, row, index) => {
+  generate_flightlog() {
+    return this.csvdata.reduce((ob, row, index) => {
       if (!ob[row.from]) ob[row.from] = [];
       ob[row.from].push({code : row.to, dist: row.distance, rowno: index});
       return ob
     }, {})
-
-    this.routes_found = [];
   }
 
-  dump(){
-    console.log(this.flights)
+  dump(what = 'flights'){
+    console.log(this[what])
   }
 
   filter_all(){
