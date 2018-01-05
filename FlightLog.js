@@ -6,16 +6,14 @@ let fs          = require('fs')
 module.exports = class FlightLog {
   constructor(csv){
     if (!csv) throw('Need a CVS file to parse')
-    
-    try {var csvdata = csv_parser(fs.readFileSync(csv, {encoding: 'utf8'}))}
+    try {this.filecontents = fs.readFileSync(csv, {encoding: 'utf8'})}
     catch(e){ throw("Can't open file '"+csv+"'") }
+    try {this.csvdata = csv_parser(this.filecontents, {columns: true})}
+    catch(e){ throw("Failed to read csv data") }
 
-    this.flights = csvdata.reduce((ob, row, index) => {
-      let from = row[0]
-        , to   = row[1]
-        , dist = row[2]
-      if (!ob[from]) ob[from] = [];
-      ob[from].push({code : to, dist: dist, rowno: index+1});
+    this.flights = this.csvdata.reduce((ob, row, index) => {
+      if (!ob[row.from]) ob[row.from] = [];
+      ob[row.from].push({code : row.to, dist: row.distance, rowno: index});
       return ob
     }, {})
 
