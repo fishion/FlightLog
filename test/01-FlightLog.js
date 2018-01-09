@@ -34,21 +34,25 @@ describe('Test object methods', () => {
     done();
   })
 
-  it('should be able to filter flights starting and ending at same place', done => {
-    let fl = new FL(testcsv)
-      , b_dests = fl.flights.b.length
-    ;
+  it('should have flights starting and ending at same place auto filtered', done => {
+    let fl = new FL(testcsv);
 
-    fl.flights.b[2].code.should.equal('b');
-    fl.filter_circular_flights();
-    fl.flights.b.length.should.equal(b_dests - 1);
-    fl.flights.b[2].code.should.not.equal('b');
-    fl.routes_found.should.deepEqual([
-      ['a','a'],
-      ['b','b']
+    fl.flights.b.length.should.equal(3);
+    fl.flights.b[2].to.should.not.equal('b');
+    fl.filtered_routes.should.deepEqual([
+      [{ from: 'a', to: 'a', distance: '0', id: 1 }],
+      [{ from: 'b', to: 'b', distance: '0', id: 6 }]
     ])
     done();
   })
+
+  it('should find all possible routes', done => {
+    let fl = new FL(testcsv)
+    fl.find_all_routes();
+    fl.all_routes.length.should.equal(15)
+    fl.dump('all_routes')
+    done();
+  });
 
   it('should be able to pair and filter simple out and return flights', done => {
     let fl = new FL(testcsv)
@@ -61,28 +65,18 @@ describe('Test object methods', () => {
     fl.flights.a.length.should.equal(a_dests - 2);
     fl.flights.b.length.should.equal(b_dests - 1);
     fl.flights.c.length.should.equal(c_dests - 1);
-    fl.routes_found.should.deepEqual([
-      ['a','b','a'],
-      ['a','c','a']
+    fl.filtered_routes.should.deepEqual([
+      [{ from: 'a', to: 'a', distance: '0', id: 1 }],
+      [{ from: 'b', to: 'b', distance: '0', id: 6 }],
+      [{ from: 'a', to: 'b', distance: '300', id: 2 },
+       { from: 'b', to: 'a', distance: '300', id: 4 }],
+      [{ from: 'a', to: 'c', distance: '500', id: 3 },
+       { from: 'c', to: 'a', distance: '500', id: 8 }]
     ])
     done();
   });
 
-  // it('should be able to preferentially filter longest routes', done => {
-  //   let fl = new FL(undefined, test_data)
-  //     , a_dests = fl.flights.a.length
-  //     , b_dests = fl.flights.b.length
-  //     , c_dests = fl.flights.c.length
-  //   ;
 
-  //   fl.filter_long_routes();
-  //   fl.flights.a.length.should.equal(a_dests - 1);
-  //   fl.flights.b.length.should.equal(b_dests - 1);
-  //   fl.flights.c.length.should.equal(c_dests - 1);
-  //   fl.routes_found.should.deepEqual([
-  //     ['a','b','c']
-  //   ])
-  //   done();
-  // });
+
 
 });
