@@ -12,14 +12,20 @@ module.exports = class FlightLog {
     try {this.csvdata = csv_parser(this.filecontents, {columns: true})}
     catch(e){ throw("Failed to read csv data") }
 
-    // make a flightlog keyed on source airport
-    this.flights = this.generate_flightlog()
+    this.flights = this.generate_flightlog(); // make a flightlog keyed on source airport
+
+    // set up filtered_routes property and filter circular flights which get in the way
+    // circular flights are ones taking off and landing from same location
     this.filtered_routes = [];
-    this.filter_circular_flights(); // prune the circular flights which are just annoying 
-    this.all_routes = this.filtered_routes.slice(); // add filtered routes to 'all routes' for completeness
+    this.filter_circular_flights(); 
+
+    // populate 'all_routes' property
+    this.all_routes = this.filtered_routes.slice(); // add filtered circular routes to 'all routes' for completeness
+    this.find_all_routes(); // find all possible longer routes
   }
 
   dump(what = 'flights'){
+    console.log('*** This is all the ' + what)
     console.log(this[what])
   }
 
