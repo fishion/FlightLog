@@ -31,9 +31,13 @@ module.exports = class FlightLog {
 
   generate_flightlog() {
     return this.csvdata.reduce((ob, row, index) => {
-      row.id = index+1;
-      if (!ob[row.from]) ob[row.from] = [];
-      ob[row.from].push(row);
+      if (!ob[row.Origin]) ob[row.Origin] = [];
+      ob[row.Origin].push({
+        from    : row["Origin"],
+        to      : row["Destination"],
+        distance: row['Distance Flown'],
+        id      : index+1
+      });
       return ob
     }, {})
   }
@@ -92,15 +96,6 @@ module.exports = class FlightLog {
       return false; 
     }
     return true; // we didn't find a route back home.
-  }
-
-  filter_long_routes(){ // smart_filter?
-    this.all_routes = this.find_all_routes();
-    // possible tactics
-    // * Get rid of longest routes until no more available
-    //   * longest by number of hops, or by distance
-    // * Find biggest set of of non-colliding routes
-    //   * biggest by number of hops, or by distance
   }
 
 }

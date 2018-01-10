@@ -1,9 +1,9 @@
-from,to,distance
-a,a,0
-a,b,300
-a,c,500
-b,a,300
-b,a,300
-b,b,0
-b,c,400
-c,a,500
+Origin,Origin Name,Origin Country,Origin City,Destination,Destination Name,Destination Country,Destination City,Total Time,Aircraft Registration,Aircraft Description,Distance Flown
+a,X,X,X,a,X,X,X,X,X,X,0
+a,X,X,X,b,X,X,X,X,X,X,300
+a,X,X,X,c,X,X,X,X,X,X,500
+b,X,X,X,a,X,X,X,X,X,X,300
+b,X,X,X,a,X,X,X,X,X,X,300
+b,X,X,X,b,X,X,X,X,X,X,0
+b,X,X,X,c,X,X,X,X,X,X,400
+c,X,X,X,a,X,X,X,X,X,X,500

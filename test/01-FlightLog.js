@@ -48,11 +48,15 @@ describe('Test object methods', () => {
 
   it('should find all possible routes', done => {
     let fl = new FL(testcsv)
-    fl.find_all_routes();
     fl.all_routes.length.should.equal(15)
-    fl.dump('all_routes')
     done();
   });
+
+  it('should find best route sets', done => {
+    let fl = new FL(testcsv)
+    //fl.find_best_sets();
+    done();
+  })
 
   it('should be able to pair and filter simple out and return flights', done => {
     let fl = new FL(testcsv)
