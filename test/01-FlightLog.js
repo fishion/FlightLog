@@ -48,7 +48,31 @@ describe('Test object methods', () => {
 
   it('should find all possible routes', done => {
     let fl = new FL(testcsv)
-    fl.all_routes.length.should.equal(15)
+    fl.all_routes.should.deepEqual([
+      [ { from: 'a', to: 'a', distance: '0', id: 1 } ],
+      [ { from: 'b', to: 'b', distance: '0', id: 6 } ],
+      [ { from: 'a', to: 'b', distance: '300', id: 2 },
+        { from: 'b', to: 'a', distance: '300', id: 4 } ],
+      [ { from: 'a', to: 'b', distance: '300', id: 2 },
+        { from: 'b', to: 'a', distance: '300', id: 5 } ],
+      [ { from: 'a', to: 'b', distance: '300', id: 2 },
+        { from: 'b', to: 'c', distance: '400', id: 7 },
+        { from: 'c', to: 'a', distance: '500', id: 8 } ],
+      [ { from: 'a', to: 'c', distance: '500', id: 3 },
+        { from: 'c', to: 'a', distance: '500', id: 8 } ],
+      [ { from: 'b', to: 'a', distance: '300', id: 4 },
+        { from: 'a', to: 'b', distance: '300', id: 2 } ],
+      [ { from: 'b', to: 'a', distance: '300', id: 5 },
+        { from: 'a', to: 'b', distance: '300', id: 2 } ],
+      [ { from: 'b', to: 'c', distance: '400', id: 7 },
+        { from: 'c', to: 'a', distance: '500', id: 8 },
+        { from: 'a', to: 'b', distance: '300', id: 2 } ],
+      [ { from: 'c', to: 'a', distance: '500', id: 8 },
+        { from: 'a', to: 'b', distance: '300', id: 2 },
+        { from: 'b', to: 'c', distance: '400', id: 7 } ],
+      [ { from: 'c', to: 'a', distance: '500', id: 8 },
+        { from: 'a', to: 'c', distance: '500', id: 3 } ]
+    ]);
     done();
   });
 

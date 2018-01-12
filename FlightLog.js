@@ -21,6 +21,8 @@ module.exports = class FlightLog {
 
     // populate 'all_routes' property
     this.all_routes = this.filtered_routes.slice(); // add filtered circular routes to 'all routes' for completeness
+    this.loopcountall = 0;
+    this.loopcountunused = 0
     this.find_all_routes(); // find all possible longer routes
   }
 
@@ -55,24 +57,27 @@ module.exports = class FlightLog {
     for (var start in this.flights){
       this._travel(start)
     }
+    console.log(this.loopcountall + ' total iterations and ' +  this.loopcountunused + ' unused iterations')
   }
 
-  _travel(start, path_here = [], used_flights = {}, location = start){
+  _travel(start, path_here = [], used_locations = {}, location = start){
     if (!this.flights[location]) return; // going nowhere from here
 
     this.flights[location].forEach(flight => {
-      if (used_flights[flight.id]) return;
+      this.loopcountall++;
+      //if(this.loopcountall % 1000000 == 0) console.log(this.loopcountall + ' total iterations')
+      if (used_locations[flight.to]) return;
 
-      // Keep track of path so far
-      let new_path = path_here.concat(flight);
+      this.loopcountunused++;
+      //if(this.loopcountunused % 1000000 == 0) console.log(this.loopcountunused + ' unused iterations')
 
       if (flight.to == start){
-        this.all_routes.push(new_path); // we have one.
-      } else {
+        this.all_routes.push(path_here.concat(flight)); // we have one.
+      } else if (this.flights[flight.to]) {
         // not home yet. Where can we go from here. 
-        let new_used = Object.assign({}, used_flights);
-        new_used[flight.id] = true;
-        this._travel(start, new_path, new_used, flight.to)
+        let new_used = Object.assign({}, used_locations);
+        new_used[flight.to] = true;
+        this._travel(start, path_here.concat(flight), new_used, flight.to)
       }
     })
   }
