@@ -14,6 +14,14 @@ module.exports = class FlightLog {
 
     this.flights = this.generate_flightlog(); // make a flightlog keyed on source airport
 
+    this.flightstats = {flight_count: this.csvdata.length, distinct_source_airports:Object.keys(this.flights).length, max_dests: 0};
+    this.flightstats.average_dests_count = this.flightstats.flight_count / this.flightstats.distinct_source_airports;
+    for (var source in this.flights){
+      let flightcount = this.flights[source].length;
+      this.flightstats.max_dests = flightcount > this.flightstats.max_dests ? flightcount : this.flightstats.max_dests;
+    }
+    this.programstats = {loopcountall:0, loopcountunused:0}
+
     // set up filtered_routes property and filter circular flights which get in the way
     // circular flights are ones taking off and landing from same location
     this.filtered_routes = [];
@@ -21,12 +29,10 @@ module.exports = class FlightLog {
 
     // populate 'all_routes' property
     this.all_routes = this.filtered_routes.slice(); // add filtered circular routes to 'all routes' for completeness
-    this.loopcountall = 0;
-    this.loopcountunused = 0
     this.find_all_routes(); // find all possible longer routes
   }
 
-  dump(what = 'flights'){
+  dump(what = 'flightstats'){
     console.log('*** This is all the ' + what)
     console.log(this[what])
   }
@@ -57,19 +63,18 @@ module.exports = class FlightLog {
     for (var start in this.flights){
       this._travel(start)
     }
-    console.log(this.loopcountall + ' total iterations and ' +  this.loopcountunused + ' unused iterations')
   }
 
-  _travel(start, path_here = [], used_locations = {}, location = start){
+  _travel(start, location = start, path_here = [], used_locations = {}){
     if (!this.flights[location]) return; // going nowhere from here
 
     this.flights[location].forEach(flight => {
-      this.loopcountall++;
-      //if(this.loopcountall % 1000000 == 0) console.log(this.loopcountall + ' total iterations')
+      this.programstats.loopcountall++;
+      //if(this.programstats.loopcountall % 1000000 == 0) console.log(this.programstats.loopcountall + ' total iterations')
       if (used_locations[flight.to]) return;
 
-      this.loopcountunused++;
-      //if(this.loopcountunused % 1000000 == 0) console.log(this.loopcountunused + ' unused iterations')
+      this.programstats.loopcountunused++;
+      //if(this.programstats.loopcountunused % 1000000 == 0) console.log(this.programstats.loopcountunused + ' unused iterations')
 
       if (flight.to == start){
         this.all_routes.push(path_here.concat(flight)); // we have one.
@@ -77,7 +82,7 @@ module.exports = class FlightLog {
         // not home yet. Where can we go from here. 
         let new_used = Object.assign({}, used_locations);
         new_used[flight.to] = true;
-        this._travel(start, path_here.concat(flight), new_used, flight.to)
+        this._travel(start, flight.to, path_here.concat(flight), new_used)
       }
     })
   }
