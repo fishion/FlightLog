@@ -1,9 +1,11 @@
 Origin,Origin Name,Origin Country,Origin City,Destination,Destination Name,Destination Country,Destination City,Total Time,Aircraft Registration,Aircraft Description,Distance Flown
-a,X,X,X,a,X,X,X,X,X,X,0
-a,X,X,X,b,X,X,X,X,X,X,300
-a,X,X,X,c,X,X,X,X,X,X,500
-b,X,X,X,a,X,X,X,X,X,X,300
-b,X,X,X,a,X,X,X,X,X,X,300
-b,X,X,X,b,X,X,X,X,X,X,0
-b,X,X,X,c,X,X,X,X,X,X,400
-c,X,X,X,a,X,X,X,X,X,X,500
+a,_,_,_,a,_,_,_,_,_,_,0
+a,_,_,_,b,_,_,_,_,_,_,300
+a,_,_,_,c,_,_,_,_,_,_,500
+b,_,_,_,a,_,_,_,_,_,_,300
+b,_,_,_,a,_,_,_,_,_,_,300
+b,_,_,_,b,_,_,_,_,_,_,0
+b,_,_,_,c,_,_,_,_,_,_,400
+c,_,_,_,a,_,_,_,_,_,_,500
+c,_,_,_,y,_,_,_,_,_,_,1000
+y,_,_,_,z,_,_,_,_,_,_,1000

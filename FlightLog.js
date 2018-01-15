@@ -14,6 +14,7 @@ module.exports = class FlightLog {
 
     this.flights = this.generate_flightlog(); // make a flightlog keyed on source airport
 
+    // generate flightstats
     this.flightstats = {flight_count: this.csvdata.length, distinct_source_airports:Object.keys(this.flights).length, max_dests: 0};
     this.flightstats.average_dests_count = this.flightstats.flight_count / this.flightstats.distinct_source_airports;
     for (var source in this.flights){
@@ -35,6 +36,9 @@ module.exports = class FlightLog {
   dump(what = 'flightstats'){
     console.log('*** This is all the ' + what)
     console.log(this[what])
+  }
+  debug(text){
+    //console.log(text)
   }
 
   generate_flightlog() {
@@ -66,26 +70,26 @@ module.exports = class FlightLog {
     this.flightstats.routes_found = this.all_routes.length
   }
 
-  _travel(start, location = start, path_here = [], used_locations = {}){
+  _travel(start, location = start, path_here = [], visited_locations = {}){
     if (!this.flights[location]) return; // going nowhere from here
 
-    this.flights[location].forEach(flight => {
+    for (let i = this.flights[location].length - 1; i>=0; i--){
+      let flight = this.flights[location][i];
       this.programstats.loopcountall++;
-      //if(this.programstats.loopcountall % 1000000 == 0) console.log(this.programstats.loopcountall + ' total iterations')
-      if (used_locations[flight.to]) return;
+      if (visited_locations[flight.to]) continue;
 
       this.programstats.loopcountunused++;
-      //if(this.programstats.loopcountunused % 1000000 == 0) console.log(this.programstats.loopcountunused + ' unused iterations')
 
       if (flight.to == start){
-        this.all_routes.push(path_here.concat(flight)); // we have one.
+        // found a way home
+        this.all_routes.push(path_here.concat(flight));
       } else if (this.flights[flight.to]) {
         // not home yet. Where can we go from here. 
-        let new_used = Object.assign({}, used_locations);
-        new_used[flight.to] = true;
-        this._travel(start, flight.to, path_here.concat(flight), new_used)
+        let new_visited = Object.assign({}, visited_locations);
+        new_visited[flight.to] = true;
+        this._travel(start, flight.to, path_here.concat(flight), new_visited)
       }
-    })
+    }
   }
 
   filter_out_and_return(){
