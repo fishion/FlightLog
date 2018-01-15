@@ -63,6 +63,7 @@ module.exports = class FlightLog {
     for (var start in this.flights){
       this._travel(start)
     }
+    this.flightstats.routes_found = this.all_routes.length
   }
 
   _travel(start, location = start, path_here = [], used_locations = {}){
