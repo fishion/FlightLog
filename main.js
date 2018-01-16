@@ -1,9 +1,14 @@
 "use strict;"
 
 const FlightLog = require('./FlightLog');
-const fl = new FlightLog('data/flightlog.csv');
+const fl = new FlightLog(
+  'data/flightlog.csv',
+  {
+    max_route_length: 5
+  }
+);
 
-fl.dump()
+fl.dump('flightstats')
 fl.dump('programstats')
 
 //fl.dump('all_routes')

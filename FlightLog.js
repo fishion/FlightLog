@@ -4,7 +4,7 @@ let fs          = require('fs')
   , csv_parser  = require('csv-parse/lib/sync');
 
 module.exports = class FlightLog {
-  constructor(csv){
+  constructor(csv, options = {}){
     if (!csv) throw('Need a CVS file to parse')
 
     try {this.filecontents = fs.readFileSync(csv, {encoding: 'utf8'})}
@@ -12,10 +12,12 @@ module.exports = class FlightLog {
     try {this.csvdata = csv_parser(this.filecontents, {columns: true})}
     catch(e){ throw("Failed to read csv data") }
 
+    this.max_route_length = options.max_route_length; // TODO some validation of this
+
     this.flights = this.generate_flightlog(); // make a flightlog keyed on source airport
 
     this.flightstats = this.generate_flightstats();
-    this.programstats = {loopcountall:0, loopcountunused:0}
+    this.programstats = {loopcountall:0, loopcountunused:0, max_route_length:this.max_route_length}
 
     // set up filtered_routes property and filter circular flights which get in the way
     // circular flights are ones taking off and landing from same location
@@ -51,7 +53,7 @@ module.exports = class FlightLog {
   generate_flightstats() {
     let flightstats = {
       flight_count              : this.csvdata.length,
-      distinct_source_airports  :Object.keys(this.flights).length,
+      distinct_source_airports  : Object.keys(this.flights).length,
       max_dests                 : 0
     };
     flightstats.average_dests_count = flightstats.flight_count / flightstats.distinct_source_airports;
@@ -60,6 +62,11 @@ module.exports = class FlightLog {
       flightstats.max_dests = flightcount > flightstats.max_dests ? flightcount : flightstats.max_dests;
     }
     return flightstats;
+  }
+
+  within_route_length_limit(length){
+    return this.max_route_length ?
+      length < this.max_route_length : true;
   }
 
   filter_circular_flights(){
@@ -92,7 +99,7 @@ module.exports = class FlightLog {
       if (flight.to == start){
         // found a way home
         this.all_routes.push(path_here.concat(flight));
-      } else if (this.flights[flight.to]) {
+      } else if (this.flights[flight.to] && this.within_route_length_limit(path_here.length)) {
         // not home yet. Where can we go from here. 
         let new_visited = Object.assign({}, visited_locations);
         new_visited[flight.to] = true;
