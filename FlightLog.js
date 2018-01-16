@@ -73,19 +73,20 @@ module.exports = class FlightLog {
 
   find_all_routes(){
     for (var start in this.flights){
-      this._travel(start)
+      this._travel_home(start)
     }
     this.flightstats.routes_found = this.all_routes.length
   }
 
-  _travel(start, location = start, path_here = [], visited_locations = {}){
+  _travel_home(start, location = start, path_here = [], visited_locations = {}, dead_ends = {}){
     if (!this.flights[location]) return; // going nowhere from here
 
+    let dead_end_count = 0;
     for (let i = this.flights[location].length - 1; i>=0; i--){
       let flight = this.flights[location][i];
-      this.programstats.loopcountall++;
-      if (visited_locations[flight.to]) continue;
 
+      this.programstats.loopcountall++;
+      if (visited_locations[flight.to] || dead_ends[flight.to]) continue;
       this.programstats.loopcountunused++;
 
       if (flight.to == start){
@@ -95,9 +96,13 @@ module.exports = class FlightLog {
         // not home yet. Where can we go from here. 
         let new_visited = Object.assign({}, visited_locations);
         new_visited[flight.to] = true;
-        this._travel(start, flight.to, path_here.concat(flight), new_visited)
+        if (!this._travel_home(start, flight.to, path_here.concat(flight), new_visited, dead_ends)){
+          dead_ends[flight.to] = true;
+          dead_end_count++; 
+        }
       }
     }
+    return this.flights[location].length != dead_end_count; 
   }
 
   filter_out_and_return(){
