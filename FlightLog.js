@@ -14,13 +14,7 @@ module.exports = class FlightLog {
 
     this.flights = this.generate_flightlog(); // make a flightlog keyed on source airport
 
-    // generate flightstats
-    this.flightstats = {flight_count: this.csvdata.length, distinct_source_airports:Object.keys(this.flights).length, max_dests: 0};
-    this.flightstats.average_dests_count = this.flightstats.flight_count / this.flightstats.distinct_source_airports;
-    for (var source in this.flights){
-      let flightcount = this.flights[source].length;
-      this.flightstats.max_dests = flightcount > this.flightstats.max_dests ? flightcount : this.flightstats.max_dests;
-    }
+    this.flightstats = this.generate_flightstats();
     this.programstats = {loopcountall:0, loopcountunused:0}
 
     // set up filtered_routes property and filter circular flights which get in the way
@@ -52,6 +46,20 @@ module.exports = class FlightLog {
       });
       return ob
     }, {})
+  }
+
+  generate_flightstats() {
+    let flightstats = {
+      flight_count              : this.csvdata.length,
+      distinct_source_airports  :Object.keys(this.flights).length,
+      max_dests                 : 0
+    };
+    flightstats.average_dests_count = flightstats.flight_count / flightstats.distinct_source_airports;
+    for (var source in this.flights){
+      let flightcount = this.flights[source].length;
+      flightstats.max_dests = flightcount > flightstats.max_dests ? flightcount : flightstats.max_dests;
+    }
+    return flightstats;
   }
 
   filter_circular_flights(){
