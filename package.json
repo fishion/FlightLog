@@ -16,6 +16,6 @@
     "should": "^13.2.0"
   },
   "dependencies": {
-    "csv-parse": "^2.0.0"
+    "csv": "^2.0.0"
   }
 }

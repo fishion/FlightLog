@@ -1,7 +1,8 @@
 "use strict";
 
 let fs          = require('fs')
-  , csv_parser  = require('csv-parse/lib/sync');
+  , csv_parser  = require('csv-parse/lib/sync')
+  , csv_string  = require('csv-stringify/lib/sync');
 
 module.exports = class FlightLog {
   constructor(csv, options = {}){
@@ -14,19 +15,17 @@ module.exports = class FlightLog {
 
     this.max_route_length = options.max_route_length; // TODO some validation of this
 
-    this.flights = this.generate_flightlog(); // make a flightlog keyed on source airport
-
-    this.flightstats = this.generate_flightstats();
+    this.flights = this.init_flightlog(); // make a flightlog keyed on source airport
+    this.flightstats = this.init_flightstats();
     this.programstats = {loopcountall:0, loopcountunused:0, max_route_length:this.max_route_length}
 
     // set up filtered_routes property and filter circular flights which get in the way
     // circular flights are ones taking off and landing from same location
+    this.filtered_flights = [];
     this.filtered_routes = [];
     this.filter_circular_flights(); 
-
-    // populate 'all_routes' property
-    this.all_routes = this.filtered_routes.slice(); // add filtered circular routes to 'all routes' for completeness
-    this.find_all_routes(); // find all possible longer routes
+    // add filtered circular routes to 'all routes' for completeness
+    this.all_routes = this.filtered_routes.slice(); 
   }
 
   dump(what = 'flightstats'){
@@ -37,20 +36,20 @@ module.exports = class FlightLog {
     //console.log(text)
   }
 
-  generate_flightlog() {
+  init_flightlog() {
     return this.csvdata.reduce((ob, row, index) => {
       if (!ob[row.Origin]) ob[row.Origin] = [];
       ob[row.Origin].push({
-        from    : row["Origin"],
-        to      : row["Destination"],
-        distance: row['Distance Flown'],
-        id      : index+1
+        original_row_no : index+1,
+        from            : row["Origin"],
+        to              : row["Destination"],
+        distance        : row['Distance Flown']
       });
       return ob
     }, {})
   }
 
-  generate_flightstats() {
+  init_flightstats() {
     let flightstats = {
       flight_count              : this.csvdata.length,
       distinct_source_airports  : Object.keys(this.flights).length,
@@ -72,13 +71,18 @@ module.exports = class FlightLog {
   filter_circular_flights(){
     for (var start in this.flights){
       this.flights[start] = this.flights[start].filter(flight => {
-        if (start == flight.to) this.filtered_routes.push([flight]);
+        if (start == flight.to) {
+          this.filtered_flights.push(flight);
+          this.filtered_routes.push([flight]);
+        }
         return start != flight.to;
       })
     }
+    this.flightstats.circular_flights = this.filtered_flights.length;
   }
 
-  find_all_routes(){
+  find_all_routes(max_route_length){
+    if (max_route_length) this.max_route_length = max_route_length;
     for (var start in this.flights){
       this._travel_home(start)
     }
@@ -113,9 +117,11 @@ module.exports = class FlightLog {
   }
 
   filter_out_and_return(){
+    let filtered_flights_start = this.filtered_flights.length;
     for (var start in this.flights){
-      this.flights[start] = this.flights[start].filter(flight => this._dead_end(flight))
+      this.flights[start] = this.flights[start].filter(flight => this._dead_end(flight));
     }
+    this.flightstats.out_and_return_flights = this.filtered_flights.length - filtered_flights_start;
   }
 
   _dead_end(flight){
@@ -125,12 +131,26 @@ module.exports = class FlightLog {
     // loop through other places we went from destination airport
     let returnIndex = this.flights[flight.to].findIndex(next_flight => next_flight.to == flight.from)
     if ( returnIndex != -1){
-      // Found a route home. Add to filtered_routes, remove from flight data and return
+      // Found a route home. Add to filtered_flights, filtered_routes, remove from flight data
+      this.filtered_flights.push(flight, this.flights[flight.to][returnIndex]);
       this.filtered_routes.push([flight, this.flights[flight.to][returnIndex]]);
       this.flights[flight.to].splice(returnIndex,1);
-      return false; 
+      return false; // not a dead end
     }
     return true; // we didn't find a route back home.
+  }
+
+  csv_output(dir){
+    // write out filtered flights
+    fs.writeFileSync('data/output_filtered.csv',
+      csv_string(this.filtered_flights.sort((a,b)=>a.original_row_no-b.original_row_no), {header:true})
+    );
+    // write out remaining flights
+    let remaining_flights = [];
+    Object.keys(this.flights).forEach(key=>remaining_flights = remaining_flights.concat(this.flights[key]));
+    fs.writeFileSync('data/output_remaining.csv',
+      csv_string(remaining_flights.sort((a,b)=>a.original_row_no-b.original_row_no), {header:true})
+    );
   }
 
 }
