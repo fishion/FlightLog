@@ -5,7 +5,7 @@ let fs          = require('fs')
   , csv_string  = require('csv-stringify/lib/sync');
 
 module.exports = class FlightLog {
-  constructor(csv, options = {}){
+  constructor(csv){
     if (!csv) throw('Need a CVS file to parse')
 
     try {this.filecontents = fs.readFileSync(csv, {encoding: 'utf8'})}
@@ -13,11 +13,9 @@ module.exports = class FlightLog {
     try {this.csvdata = csv_parser(this.filecontents, {columns: true})}
     catch(e){ throw("Failed to read csv data") }
 
-    this.max_route_length = options.max_route_length; // TODO some validation of this
-
     this.flights = this.init_flightlog(); // make a flightlog keyed on source airport
     this.flightstats = this.init_flightstats();
-    this.programstats = {loopcountall:0, loopcountunused:0, max_route_length:this.max_route_length}
+    this.programstats = {loopcountall:0, loopcountunused:0}
 
     // set up filtered_routes property and filter circular flights which get in the way
     // circular flights are ones taking off and landing from same location
@@ -63,11 +61,6 @@ module.exports = class FlightLog {
     return flightstats;
   }
 
-  within_route_length_limit(length){
-    return this.max_route_length ?
-      length < this.max_route_length : true;
-  }
-
   filter_circular_flights(){
     for (var start in this.flights){
       this.flights[start] = this.flights[start].filter(flight => {
@@ -81,63 +74,66 @@ module.exports = class FlightLog {
     this.flightstats.circular_flights = this.filtered_flights.length;
   }
 
-  find_all_routes(max_route_length){
-    if (max_route_length) this.max_route_length = max_route_length;
-    for (var start in this.flights){
-      this._travel_home(start)
-    }
-    this.flightstats.routes_found = this.all_routes.length
-  }
-
-  _travel_home(start, location = start, path_here = [], visited_locations = {}, dead_ends = {}){
-    if (!this.flights[location]) return; // going nowhere from here
-
-    let dead_end_count = 0;
-    for (let i = this.flights[location].length - 1; i>=0; i--){
-      let flight = this.flights[location][i];
-
-      this.programstats.loopcountall++;
-      if (visited_locations[flight.to] || dead_ends[flight.to]) continue;
-      this.programstats.loopcountunused++;
-
-      if (flight.to == start){
-        // found a way home
-        this.all_routes.push(path_here.concat(flight));
-      } else if (this.flights[flight.to] && this.within_route_length_limit(path_here.length)) {
-        // not home yet. Where can we go from here. 
-        let new_visited = Object.assign({}, visited_locations);
-        new_visited[flight.to] = true;
-        if (!this._travel_home(start, flight.to, path_here.concat(flight), new_visited, dead_ends)){
-          dead_ends[flight.to] = true;
-          dead_end_count++; 
-        }
-      }
-    }
-    return this.flights[location].length != dead_end_count; 
-  }
-
   filter_out_and_return(){
+    const _dead_end = (flight) => {
+      if (flight.from == flight.to) return true; // Circular route going nowhere
+      if (!this.flights[flight.to]) return true; // no flights out of here to test
+  
+      // loop through other places we went from destination airport
+      let returnIndex = this.flights[flight.to].findIndex(next_flight => next_flight.to == flight.from)
+      if ( returnIndex != -1){
+        // Found a route home. Add to filtered_flights, filtered_routes, remove from flight data
+        this.filtered_flights.push(flight, this.flights[flight.to][returnIndex]);
+        this.filtered_routes.push([flight, this.flights[flight.to][returnIndex]]);
+        this.flights[flight.to].splice(returnIndex,1);
+        return false; // not a dead end
+      }
+      return true; // we didn't find a route back home.
+    };
+
     let filtered_flights_start = this.filtered_flights.length;
     for (var start in this.flights){
-      this.flights[start] = this.flights[start].filter(flight => this._dead_end(flight));
+      this.flights[start] = this.flights[start].filter(flight => _dead_end(flight));
     }
     this.flightstats.out_and_return_flights = this.filtered_flights.length - filtered_flights_start;
   }
 
-  _dead_end(flight){
-    if (flight.from == flight.to) return true; // Circular route going nowhere
-    if (!this.flights[flight.to]) return true; // no flights out of here to test
+  find_all_routes(max_route_length){
+    let within_route_length_limit = max_route_length ? 
+      (length) => length < max_route_length :
+      () => true;
 
-    // loop through other places we went from destination airport
-    let returnIndex = this.flights[flight.to].findIndex(next_flight => next_flight.to == flight.from)
-    if ( returnIndex != -1){
-      // Found a route home. Add to filtered_flights, filtered_routes, remove from flight data
-      this.filtered_flights.push(flight, this.flights[flight.to][returnIndex]);
-      this.filtered_routes.push([flight, this.flights[flight.to][returnIndex]]);
-      this.flights[flight.to].splice(returnIndex,1);
-      return false; // not a dead end
+    const _travel_home = (start, location = start, path_here = [], visited_locations = {}, dead_ends = {}) => {
+      if (!this.flights[location]) return; // going nowhere from here
+
+      let dead_end_count = 0;
+      for (let i = this.flights[location].length - 1; i>=0; i--){
+        let flight = this.flights[location][i];
+  
+        this.programstats.loopcountall++;
+        if (visited_locations[flight.to] || dead_ends[flight.to]) continue;
+        this.programstats.loopcountunused++;
+  
+        if (flight.to == start){
+          // found a way home
+          this.all_routes.push(path_here.concat(flight));
+        } else if (this.flights[flight.to] && within_route_length_limit(path_here.length)) {
+          // not home yet. Where can we go from here. 
+          let new_visited = Object.assign({}, visited_locations);
+          new_visited[flight.to] = true;
+          if (!_travel_home(start, flight.to, path_here.concat(flight), new_visited, dead_ends)){
+            dead_ends[flight.to] = true;
+            dead_end_count++; 
+          }
+        }
+      }
+      return this.flights[location].length != dead_end_count; 
     }
-    return true; // we didn't find a route back home.
+
+    for (var start in this.flights){
+      _travel_home(start)
+    }
+    this.flightstats.routes_found = this.all_routes.length
   }
 
   csv_output(dir){
