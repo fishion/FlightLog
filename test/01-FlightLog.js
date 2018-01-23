@@ -2,7 +2,7 @@
 
 let should  = require('should')
   , path    = require('path')
-let FL      = require('../Flightlog');
+let FL      = require('../lib/Flightlog');
 let testcsv = path.join(__dirname,'flightlog.csv')
 
 describe('Test constructor', () => {
