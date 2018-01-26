@@ -16,6 +16,7 @@
     "should": "^13.2.0"
   },
   "dependencies": {
-    "csv": "^2.0.0"
+    "csv": "^2.0.0",
+    "neo4j-driver": "^1.5.3"
   }
 }

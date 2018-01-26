@@ -40,12 +40,12 @@ describe('Test object methods', () => {
     fl.flights.b.length.should.equal(3);
     fl.flights.b[2].to.should.not.equal('b');
     fl.filtered_routes.should.deepEqual([
-      [{ from: 'a', to: 'a', distance: '0', original_row_no: 1 }],
-      [{ from: 'b', to: 'b', distance: '0', original_row_no: 6 }]
+      [{ from: 'a', to: 'a', "Origin": "a", "Origin Name": "a", "Destination": "a", "Destination Name": "a", "Distance Flown": '0', original_row_no: 1, "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_" }],
+      [{ from: 'b', to: 'b', "Origin": "b", "Origin Name": "b", "Destination": "b", "Destination Name": "b", "Distance Flown": '0', original_row_no: 6, "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_" }]
     ])
     done();
   })
-
+  
   it('should be able to pair and filter simple out and return flights', done => {
     let fl = new FL(testcsv)
       , a_dests = fl.flights.a.length
@@ -58,12 +58,12 @@ describe('Test object methods', () => {
     fl.flights.b.length.should.equal(b_dests - 1);
     fl.flights.c.length.should.equal(c_dests - 1);
     fl.filtered_routes.should.deepEqual([
-      [{ from: 'a', to: 'a', distance: '0', original_row_no: 1 }],
-      [{ from: 'b', to: 'b', distance: '0', original_row_no: 6 }],
-      [{ from: 'a', to: 'b', distance: '300', original_row_no: 2 },
-       { from: 'b', to: 'a', distance: '300', original_row_no: 4 }],
-      [{ from: 'a', to: 'c', distance: '500', original_row_no: 3 },
-       { from: 'c', to: 'a', distance: '500', original_row_no: 8 }]
+      [{ from: 'a', to: 'a', original_row_no: 1, "Origin": "a", "Origin Name": "a", "Destination": "a", "Destination Name": "a", "Distance Flown": '0', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_" }],
+      [{ from: 'b', to: 'b', original_row_no: 6, "Origin": "b", "Origin Name": "b", "Destination": "b", "Destination Name": "b", "Distance Flown": '0', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_" }],
+      [{ from: 'a', to: 'b', original_row_no: 2, "Origin": "a", "Origin Name": "a", "Destination": "b", "Destination Name": "b", "Distance Flown": '300', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_" },
+       { from: 'b', to: 'a', original_row_no: 4, "Origin": "b", "Origin Name": "b", "Destination": "a", "Destination Name": "a", "Distance Flown": '300', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_" }],
+      [{ from: 'a', to: 'c', original_row_no: 3, "Origin": "a", "Origin Name": "a", "Destination": "c", "Destination Name": "c", "Distance Flown": '500', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_" },
+       { from: 'c', to: 'a', original_row_no: 8, "Origin": "c", "Origin Name": "c", "Destination": "a", "Destination Name": "a", "Distance Flown": '500', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_" }]
     ])
     done();
   });
@@ -73,29 +73,29 @@ describe('Test object methods', () => {
     let fl = new FL(testcsv);
     fl.find_all_routes();
     fl.all_routes.should.deepEqual([
-      [ { from: 'a', to: 'a', distance: '0', original_row_no: 1 } ],
-      [ { from: 'b', to: 'b', distance: '0', original_row_no: 6 } ],
-      [ { from: 'a', to: 'c', distance: '500', original_row_no: 3 },
-        { from: 'c', to: 'a', distance: '500', original_row_no: 8 } ],
-      [ { from: 'a', to: 'b', distance: '300', original_row_no: 2 },
-        { from: 'b', to: 'c', distance: '400', original_row_no: 7 },
-        { from: 'c', to: 'a', distance: '500', original_row_no: 8 } ],
-      [ { from: 'a', to: 'b', distance: '300', original_row_no: 2 },
-        { from: 'b', to: 'a', distance: '300', original_row_no: 5 } ],
-      [ { from: 'a', to: 'b', distance: '300', original_row_no: 2 },
-        { from: 'b', to: 'a', distance: '300', original_row_no: 4 } ],
-      [ { from: 'b', to: 'c', distance: '400', original_row_no: 7 },
-        { from: 'c', to: 'a', distance: '500', original_row_no: 8 },
-        { from: 'a', to: 'b', distance: '300', original_row_no: 2 } ],
-      [ { from: 'b', to: 'a', distance: '300', original_row_no: 5 },
-        { from: 'a', to: 'b', distance: '300', original_row_no: 2 } ],
-      [ { from: 'b', to: 'a', distance: '300', original_row_no: 4 },
-        { from: 'a', to: 'b', distance: '300', original_row_no: 2 } ],
-      [ { from: 'c', to: 'a', distance: '500', original_row_no: 8 },
-        { from: 'a', to: 'c', distance: '500', original_row_no: 3 } ],
-      [ { from: 'c', to: 'a', distance: '500', original_row_no: 8 },
-        { from: 'a', to: 'b', distance: '300', original_row_no: 2 },
-        { from: 'b', to: 'c', distance: '400', original_row_no: 7 } ]
+      [ { from: 'a', to: 'a', original_row_no: 1, "Origin": "a", "Origin Name": "a", "Destination": "a", "Destination Name": "a", "Distance Flown": '0', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_" } ],
+      [ { from: 'b', to: 'b', original_row_no: 6, "Origin": "b", "Origin Name": "b", "Destination": "b", "Destination Name": "b", "Distance Flown": '0', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  } ],
+      [ { from: 'a', to: 'c', original_row_no: 3, "Origin": "a", "Origin Name": "a", "Destination": "c", "Destination Name": "c", "Distance Flown": '500', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  },
+        { from: 'c', to: 'a', original_row_no: 8, "Origin": "c", "Origin Name": "c", "Destination": "a", "Destination Name": "a", "Distance Flown": '500', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  } ],
+      [ { from: 'a', to: 'b', original_row_no: 2, "Origin": "a", "Origin Name": "a", "Destination": "b", "Destination Name": "b", "Distance Flown": '300', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  },
+        { from: 'b', to: 'c', original_row_no: 7, "Origin": "b", "Origin Name": "b", "Destination": "c", "Destination Name": "c", "Distance Flown": '400', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  },
+        { from: 'c', to: 'a', original_row_no: 8, "Origin": "c", "Origin Name": "c", "Destination": "a", "Destination Name": "a", "Distance Flown": '500', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  } ],
+      [ { from: 'a', to: 'b', original_row_no: 2, "Origin": "a", "Origin Name": "a", "Destination": "b", "Destination Name": "b", "Distance Flown": '300', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  },
+        { from: 'b', to: 'a', original_row_no: 5, "Origin": "b", "Origin Name": "b", "Destination": "a", "Destination Name": "a", "Distance Flown": '300', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  } ],
+      [ { from: 'a', to: 'b', original_row_no: 2, "Origin": "a", "Origin Name": "a", "Destination": "b", "Destination Name": "b", "Distance Flown": '300', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  },
+        { from: 'b', to: 'a', original_row_no: 4, "Origin": "b", "Origin Name": "b", "Destination": "a", "Destination Name": "a", "Distance Flown": '300', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  } ],
+      [ { from: 'b', to: 'c', original_row_no: 7, "Origin": "b", "Origin Name": "b", "Destination": "c", "Destination Name": "c", "Distance Flown": '400', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  },
+        { from: 'c', to: 'a', original_row_no: 8, "Origin": "c", "Origin Name": "c", "Destination": "a", "Destination Name": "a", "Distance Flown": '500', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  },
+        { from: 'a', to: 'b', original_row_no: 2, "Origin": "a", "Origin Name": "a", "Destination": "b", "Destination Name": "b", "Distance Flown": '300', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  } ],
+      [ { from: 'b', to: 'a', original_row_no: 5, "Origin": "b", "Origin Name": "b", "Destination": "a", "Destination Name": "a", "Distance Flown": '300', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  },
+        { from: 'a', to: 'b', original_row_no: 2, "Origin": "a", "Origin Name": "a", "Destination": "b", "Destination Name": "b", "Distance Flown": '300', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  } ],
+      [ { from: 'b', to: 'a', original_row_no: 4, "Origin": "b", "Origin Name": "b", "Destination": "a", "Destination Name": "a", "Distance Flown": '300', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  },
+        { from: 'a', to: 'b', original_row_no: 2, "Origin": "a", "Origin Name": "a", "Destination": "b", "Destination Name": "b", "Distance Flown": '300', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  } ],
+      [ { from: 'c', to: 'a', original_row_no: 8, "Origin": "c", "Origin Name": "c", "Destination": "a", "Destination Name": "a", "Distance Flown": '500', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  },
+        { from: 'a', to: 'c', original_row_no: 3, "Origin": "a", "Origin Name": "a", "Destination": "c", "Destination Name": "c", "Distance Flown": '500', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  } ],
+      [ { from: 'c', to: 'a', original_row_no: 8, "Origin": "c", "Origin Name": "c", "Destination": "a", "Destination Name": "a", "Distance Flown": '500', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  },
+        { from: 'a', to: 'b', original_row_no: 2, "Origin": "a", "Origin Name": "a", "Destination": "b", "Destination Name": "b", "Distance Flown": '300', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  },
+        { from: 'b', to: 'c', original_row_no: 7, "Origin": "b", "Origin Name": "b", "Destination": "c", "Destination Name": "c", "Distance Flown": '400', "Aircraft Description": "_", "Aircraft Registration": "_", "Destination City": "_", "Destination Country": "_", "Origin City": "_", "Origin Country": "_", "Total Time": "_"  } ]
     ]);
     done();
   });
