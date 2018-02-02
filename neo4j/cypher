@@ -1,0 +1,15 @@
+//server address
+//http://165.227.225.172:7474/browser/
+
+// set to return as all nodes
+:config initialNodeDisplay: 1000
+
+// get entire graph
+MATCH (n) RETURN n
+
+// Get all paths of length 4, with distinct airports
+MATCH path = (start:Airport)-[:Flight*4]->(start:Airport)
+UNWIND nodes(path) as nodes
+WITH start,path,collect(DISTINCT nodes) as uniquenodes
+	WHERE length(path) = size(uniquenodes) 
+return path;
