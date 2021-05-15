@@ -12,11 +12,11 @@
   "author": "AJM",
   "license": "ISC",
   "devDependencies": {
-    "mocha": "^4.1.0",
+    "mocha": "^8.4.0",
     "should": "^13.2.0"
   },
   "dependencies": {
-    "csv": "^2.0.0",
-    "neo4j-driver": "^1.5.3"
+    "csv": "^5.5.0",
+    "neo4j-driver": "^4.2.3"
   }
 }
